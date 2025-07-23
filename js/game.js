@@ -12,7 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
         redOverlay: document.getElementById('red-overlay'),
         startButton: document.getElementById('start-button'),
         restartButton: document.getElementById('restart-button'),
-        audio: new Audio('assets/sounds/game-music.mp3')
+        comboCounter: document.getElementById('combo-counter'),
+        audio: new Audio('assets/sounds/game-music.mp3'),
+        bonusSound: new Audio('assets/sounds/bonus.mp3'),
+        missSound: new Audio('assets/sounds/miss.mp3')
     };
 
     // Конфиг
@@ -23,7 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
         buttonSize: 120,
         initialPressTime: 600,
         powerReward: 5,
-        powerPenalty: 10 // Вернули штраф 10% за пропуск
+        powerPenalty: 10,
+        bonusChance: 0.15,
+        comboPowerBonus: {
+            3: 5,
+            5: 10,
+            10: 20
+        },
+        pressCooldown: 100 // Защита от двойных нажатий
     };
 
     // Состояние
@@ -36,7 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
         isRunning: false,
         pressVisible: false,
         pressTimeout: null,
-        pressTime: config.initialPressTime
+        pressTime: config.initialPressTime,
+        combo: 0,
+        maxCombo: 0,
+        isBonusActive: false,
+        lastPressTime: 0
     };
 
     // Уровни
@@ -48,20 +62,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Инициализация
     function init() {
+        setupTelegramFix();
         bindEvents();
         setupAudio();
         resetGame();
     }
 
+    function setupTelegramFix() {
+        if (window.Telegram?.WebApp) {
+            document.body.style.cssText = `
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                touch-action: manipulation;
+            `;
+        }
+    }
+
     function bindEvents() {
+        // Основные кнопки
         elements.startButton.addEventListener('click', startGame);
         elements.restartButton.addEventListener('click', restartGame);
-        elements.pressButton.addEventListener('click', handleButtonClick);
+
+        // Улучшенная система обработки нажатий
+        const handleInteraction = (e) => {
+            e.preventDefault();
+            const now = Date.now();
+            if (now - state.lastPressTime < config.pressCooldown) return;
+            state.lastPressTime = now;
+            
+            if (!state.pressVisible || !state.isRunning) return;
+            
+            // Визуальная обратная связь
+            elements.pressButton.style.transform = 'translate(-50%, -50%) scale(0.9)';
+            setTimeout(() => {
+                elements.pressButton.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 100);
+            
+            hitAction();
+        };
+
+        // Все возможные типы событий
+        const eventTypes = [
+            'mousedown', 'touchstart', 'pointerdown', 'click'
+        ];
+        
+        eventTypes.forEach(type => {
+            elements.pressButton.addEventListener(type, handleInteraction, { 
+                passive: type !== 'touchstart' 
+            });
+        });
     }
 
     function setupAudio() {
         elements.audio.loop = true;
-        elements.audio.volume = 0.5;
+        elements.audio.volume = 0.3;
+        elements.bonusSound.volume = 0.7;
+        elements.missSound.volume = 0.5;
+        
         document.addEventListener('click', () => {
             elements.audio.play().catch(e => console.log('Audio play error:', e));
         }, { once: true });
@@ -94,8 +151,17 @@ document.addEventListener('DOMContentLoaded', () => {
         state.speed = config.initialSpeed;
         state.isRunning = false;
         state.pressVisible = false;
-        state.pressTime = config.initialPressTime;
+        state.combo = 0;
+        state.maxCombo = 0;
+        state.isBonusActive = false;
+        state.lastPressTime = 0;
+        
         elements.pressButton.classList.add('hidden');
+        elements.pressButton.style.transform = 'translate(-50%, -50%) scale(1)';
+        elements.pressButton.style.background = '';
+        elements.comboCounter.textContent = '';
+        elements.comboCounter.style.color = '';
+        
         updateUI();
         updateCharacter();
     }
@@ -111,15 +177,27 @@ document.addEventListener('DOMContentLoaded', () => {
     function showPress() {
         if (!state.isRunning) return;
         
-        // Три близкие позиции для кнопки (в центральной части экрана)
+        // Сброс состояний
+        state.isBonusActive = false;
+        elements.pressButton.style.background = '';
+        elements.pressButton.classList.remove('bonus-glow', 'shake');
+        
+        // Случайный бонус
+        if (Math.random() < config.bonusChance) {
+            state.isBonusActive = true;
+            elements.pressButton.style.background = 'radial-gradient(circle, gold, orange)';
+            elements.pressButton.classList.add('bonus-glow');
+        }
+
+        // Позиционирование кнопки
         const gameRect = elements.gameScreen.getBoundingClientRect();
         const buttonHalfSize = config.buttonSize / 2;
         const centerY = gameRect.height / 2;
         
         const positions = [
-            { x: gameRect.width / 2, y: centerY - 100 }, // Чуть выше центра
-            { x: gameRect.width / 2, y: centerY },       // Центр
-            { x: gameRect.width / 2, y: centerY + 100 }  // Чуть ниже центра
+            { x: gameRect.width / 2, y: centerY - 100 },
+            { x: gameRect.width / 2, y: centerY },
+            { x: gameRect.width / 2, y: centerY + 100 }
         ];
         
         const randomPos = positions[Math.floor(Math.random() * positions.length)];
@@ -132,9 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         state.pressTimeout = setTimeout(() => {
             if (state.pressVisible) {
-                hidePress();
-                changePower(-config.powerPenalty); // Штраф 10% за пропуск
-                schedulePress();
+                missAction();
             }
         }, state.pressTime);
     }
@@ -142,17 +218,49 @@ document.addEventListener('DOMContentLoaded', () => {
     function hidePress() {
         state.pressVisible = false;
         elements.pressButton.classList.add('hidden');
-    }
-
-    function handleButtonClick() {
-        if (!state.isRunning || !state.pressVisible) return;
-        hitAction();
+        elements.pressButton.classList.remove('bonus-glow');
     }
 
     function hitAction() {
         hidePress();
+        
+        // Комбо-система
+        state.combo++;
+        if (state.combo > state.maxCombo) {
+            state.maxCombo = state.combo;
+        }
+        updateCombo();
+        
+        // Бонус за комбо
+        if (config.comboPowerBonus[state.combo]) {
+            changePower(config.comboPowerBonus[state.combo]);
+            showBonusEffect();
+        }
+        
+        // Бонусная кнопка
+        if (state.isBonusActive) {
+            changePower(15);
+            elements.bonusSound.play();
+            showBonusEffect();
+        }
+        
         moveUp();
         schedulePress();
+    }
+
+    function missAction() {
+        elements.missSound.play();
+        elements.pressButton.classList.add('shake');
+        changePower(-config.powerPenalty);
+        state.combo = 0;
+        updateCombo();
+        hidePress();
+        
+        if (state.isRunning) {
+            setTimeout(() => {
+                schedulePress();
+            }, 500);
+        }
     }
 
     function moveUp() {
@@ -176,6 +284,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addScore() {
         state.score++;
+        
+        // Бонус за комбо
+        if (state.combo >= 3 && state.combo % 3 === 0) {
+            state.score++;
+        }
+        
         if (state.level < config.maxLevel) {
             const newLevel = Math.floor(state.score / 5);
             if (newLevel > state.level) {
@@ -195,6 +309,17 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI();
     }
 
+    function updateCombo() {
+        if (state.combo > 1) {
+            elements.comboCounter.textContent = `x${state.combo}`;
+            const hue = Math.min(state.combo * 10, 120);
+            elements.comboCounter.style.color = `hsl(${hue}, 100%, 50%)`;
+            elements.comboCounter.classList.add('show');
+        } else {
+            elements.comboCounter.classList.remove('show');
+        }
+    }
+
     function updateCharacter() {
         elements.character.src = `assets/images/character-${state.position}.png`;
     }
@@ -206,6 +331,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const redness = Math.min(0.7, state.score / 100);
         elements.redOverlay.style.backgroundColor = `rgba(255, 0, 0, ${redness})`;
+    }
+
+    function showBonusEffect() {
+        const effect = document.createElement('div');
+        effect.className = 'bonus-effect';
+        effect.textContent = state.isBonusActive ? 'БОНУС!' : 'КОМБО!';
+        effect.style.left = `${elements.pressButton.offsetLeft}px`;
+        effect.style.top = `${elements.pressButton.offsetTop - 50}px`;
+        elements.gameScreen.appendChild(effect);
+        
+        setTimeout(() => {
+            effect.remove();
+        }, 1000);
     }
 
     function endGame() {

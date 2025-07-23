@@ -68,6 +68,12 @@ body {
 /* Игровой экран */
 #game-screen {
     flex-direction: column;
+        pointer-events: none;
+}
+
+#press-button, #power-container, #score-container {
+    pointer-events: auto;
+
 }
 
 #game-background {
@@ -100,6 +106,7 @@ body {
     z-index: 2;
     max-height: 90vh;
     object-fit: contain;
+    transition: transform 0.3s;
 }
 
 /* Кнопка ЖМИ! */
@@ -124,6 +131,11 @@ body {
     outline: none;
     transition: all 0.2s;
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        pointer-events: auto !important;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+
 }
 
 #press-button:active {
@@ -132,6 +144,7 @@ body {
     box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
 }
 
+/* Анимации кнопки */
 @keyframes pulse {
     from { 
         transform: translate(-50%, -50%) scale(1);
@@ -141,6 +154,69 @@ body {
         transform: translate(-50%, -50%) scale(1.1);
         box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
     }
+}
+
+/* Тряска */
+.shake {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translate(-50%, -50%); }
+    20% { transform: translate(-55%, -50%); }
+    40% { transform: translate(-45%, -50%); }
+    60% { transform: translate(-50%, -55%); }
+    80% { transform: translate(-50%, -45%); }
+}
+
+/* Бонус-эффекты */
+.bonus-glow {
+    animation: glow 0.8s infinite alternate;
+}
+
+@keyframes glow {
+    from { box-shadow: 0 0 10px gold; }
+    to { box-shadow: 0 0 30px orange; }
+}
+
+.bonus-effect {
+    position: absolute;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: gold;
+    text-shadow: 0 0 5px black;
+    animation: float-up 1s forwards;
+    z-index: 20;
+}
+
+@keyframes float-up {
+    to { transform: translateY(-100px); opacity: 0; }
+}
+
+/* Комбо-счётчик */
+#combo-counter {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #00FF00;
+    text-shadow: 0 0 10px #000;
+    z-index: 10;
+    transition: all 0.3s;
+    opacity: 0;
+}
+
+#combo-counter.show {
+    opacity: 1;
+    animation: combo-pop 0.3s;
+}
+
+@keyframes combo-pop {
+    0% { transform: translateX(-50%) scale(0.5); }
+    50% { transform: translateX(-50%) scale(1.2); }
+    100% { transform: translateX(-50%) scale(1); }
 }
 
 /* Счет */
@@ -249,6 +325,11 @@ body {
         font-size: 1.5rem;
     }
     
+    #combo-counter {
+        font-size: 2rem;
+        bottom: 100px;
+    }
+    
     #score {
         font-size: 2rem;
     }
@@ -274,7 +355,11 @@ body {
         font-size: 1.5rem;
     }
 }
-
+@media (hover: none) {
+    #press-button {
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+    }
+}
 @media (max-height: 600px) {
     #character {
         height: 400px;
@@ -290,5 +375,10 @@ body {
     #power-container {
         height: 150px;
         width: 25px;
+    }
+    
+    #combo-counter {
+        bottom: 80px;
+        font-size: 1.8rem;
     }
 }
