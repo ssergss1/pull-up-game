@@ -27,7 +27,7 @@ body {
     display: none !important;
 }
 
-/* Меню - белый текст */
+/* Меню */
 #menu-screen {
     background: url('../assets/images/background.jpg') center/cover no-repeat;
     z-index: 10;
@@ -42,7 +42,7 @@ body {
 }
 
 .menu-container h1 {
-    color: white; /* Белый текст */
+    color: white;
     font-size: 2.5rem;
     margin-bottom: 30px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
@@ -57,6 +57,12 @@ body {
     border-radius: 50px;
     cursor: pointer;
     margin-top: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#start-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.6);
 }
 
 /* Игровой экран */
@@ -83,7 +89,7 @@ body {
     transition: background-color 0.3s;
 }
 
-/* Персонаж - не выходит за границы */
+/* Персонаж */
 #character {
     position: absolute;
     top: 0;
@@ -92,8 +98,49 @@ body {
     height: 640px;
     width: 360px;
     z-index: 2;
-    max-height: 90vh; /* Не выходит за границы */
+    max-height: 90vh;
     object-fit: contain;
+}
+
+/* Кнопка ЖМИ! */
+#press-button {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid white;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    animation: pulse 0.5s infinite alternate;
+    transform: translate(-50%, -50%);
+    outline: none;
+    transition: all 0.2s;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+#press-button:active {
+    transform: translate(-50%, -50%) scale(0.95);
+    background-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+}
+
+@keyframes pulse {
+    from { 
+        transform: translate(-50%, -50%) scale(1);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    }
+    to { 
+        transform: translate(-50%, -50%) scale(1.1);
+        box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+    }
 }
 
 /* Счет */
@@ -145,27 +192,7 @@ body {
     transition: height 0.3s;
 }
 
-/* Надпись ЖМИ! */
-#press-text {
-    position: absolute;
-    top: 25%;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 4rem;
-    font-weight: bold;
-    color: white;
-    text-shadow: 0 0 10px rgba(255,255,255,0.8);
-    z-index: 4;
-    display: none;
-    animation: pulse 0.5s infinite alternate;
-}
-
-@keyframes pulse {
-    from { transform: translateX(-50%) scale(1); }
-    to { transform: translateX(-50%) scale(1.1); }
-}
-
-/* Экран завершения - белый текст */
+/* Экран завершения */
 #game-over-screen {
     background-color: rgba(0, 0, 0, 0.85);
     z-index: 20;
@@ -177,7 +204,7 @@ body {
     background-color: rgba(50, 50, 50, 0.9);
     border-radius: 15px;
     max-width: 90%;
-    color: white; /* Белый текст */
+    color: white;
 }
 
 #final-score {
@@ -201,6 +228,12 @@ body {
     border: none;
     border-radius: 50px;
     cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#restart-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 10px rgba(255, 85, 85, 0.6);
 }
 
 /* Адаптация */
@@ -210,9 +243,10 @@ body {
         height: 500px;
     }
     
-    #press-text {
-        font-size: 3rem;
-        top: 20%;
+    #press-button {
+        width: 100px;
+        height: 100px;
+        font-size: 1.5rem;
     }
     
     #score {
@@ -221,5 +255,40 @@ body {
     
     #level {
         font-size: 1rem;
+    }
+    
+    .menu-container h1 {
+        font-size: 2rem;
+    }
+    
+    #start-button, #restart-button {
+        padding: 12px 30px;
+        font-size: 1rem;
+    }
+    
+    #final-score {
+        font-size: 2.5rem;
+    }
+    
+    #final-level {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-height: 600px) {
+    #character {
+        height: 400px;
+        width: 220px;
+    }
+    
+    #press-button {
+        width: 80px;
+        height: 80px;
+        font-size: 1.2rem;
+    }
+    
+    #power-container {
+        height: 150px;
+        width: 25px;
     }
 }
