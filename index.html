@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Подтягивания</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Меню -->
+    <div id="menu-screen" class="screen">
+        <div class="menu-container">
+            <h1>Подтягивания</h1>
+            <button id="start-button">Начать!</button>
+        </div>
+    </div>
+
+    <!-- Игровой экран -->
+    <div id="game-screen" class="screen hidden">
+        <div id="game-background"></div>
+        <div id="red-overlay"></div>
+        
+        <div id="score-container">
+            <div id="score">0</div>
+            <div id="level">Лох</div>
+        </div>
+        
+        <img id="character" src="assets/images/character-bottom.png" alt="Персонаж">
+        <div id="press-text">ЖМИ!</div>
+        
+        <div id="power-container">
+            <div id="power-bar"></div>
+        </div>
+    </div>
+
+    <!-- Экран завершения -->
+    <div id="game-over-screen" class="screen hidden">
+        <div class="game-over-container">
+            <h2>КОНЕЦ ИГРЫ</h2>
+            <div id="final-score">0</div>
+            <div id="final-level">Лох</div>
+            <button id="restart-button">Играть снова</button>
+        </div>
+    </div>
+
+    <script src="js/game.js"></script>
+</body>
+</html>

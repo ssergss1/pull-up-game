@@ -1,0 +1,225 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    background-color: #111;
+}
+
+.screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Меню - белый текст */
+#menu-screen {
+    background: url('../assets/images/background.jpg') center/cover no-repeat;
+    z-index: 10;
+}
+
+.menu-container {
+    text-align: center;
+    padding: 30px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 15px;
+    max-width: 90%;
+}
+
+.menu-container h1 {
+    color: white; /* Белый текст */
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+#start-button {
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+/* Игровой экран */
+#game-screen {
+    flex-direction: column;
+}
+
+#game-background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url('../assets/images/gym-background.jpg') center/cover no-repeat;
+    z-index: 0;
+    filter: brightness(0.8);
+}
+
+#red-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 0, 0, 0);
+    z-index: 1;
+    mix-blend-mode: multiply;
+    transition: background-color 0.3s;
+}
+
+/* Персонаж - не выходит за границы */
+#character {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 640px;
+    width: 360px;
+    z-index: 2;
+    max-height: 90vh; /* Не выходит за границы */
+    object-fit: contain;
+}
+
+/* Счет */
+#score-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 3;
+    color: white;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 10px 20px;
+    border-radius: 10px;
+}
+
+#score {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #FFD700;
+}
+
+#level {
+    font-size: 1.2rem;
+    margin-top: -5px;
+    color: white;
+    text-transform: uppercase;
+}
+
+/* Шкала силы */
+#power-container {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    width: 30px;
+    height: 200px;
+    background-color: rgba(68, 68, 68, 0.6);
+    border-radius: 15px;
+    overflow: hidden;
+    transform: translateY(-50%);
+    z-index: 3;
+}
+
+#power-bar {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, #00FF00, #FFFF00, #FF0000);
+    transition: height 0.3s;
+}
+
+/* Надпись ЖМИ! */
+#press-text {
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 4rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 10px rgba(255,255,255,0.8);
+    z-index: 4;
+    display: none;
+    animation: pulse 0.5s infinite alternate;
+}
+
+@keyframes pulse {
+    from { transform: translateX(-50%) scale(1); }
+    to { transform: translateX(-50%) scale(1.1); }
+}
+
+/* Экран завершения - белый текст */
+#game-over-screen {
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 20;
+}
+
+.game-over-container {
+    text-align: center;
+    padding: 30px;
+    background-color: rgba(50, 50, 50, 0.9);
+    border-radius: 15px;
+    max-width: 90%;
+    color: white; /* Белый текст */
+}
+
+#final-score {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #FFD700;
+    margin: 20px 0;
+}
+
+#final-level {
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+}
+
+#restart-button {
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    background: linear-gradient(135deg, #FF5555, #FF0000);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+}
+
+/* Адаптация */
+@media (max-width: 480px) {
+    #character {
+        width: 280px;
+        height: 500px;
+    }
+    
+    #press-text {
+        font-size: 3rem;
+        top: 20%;
+    }
+    
+    #score {
+        font-size: 2rem;
+    }
+    
+    #level {
+        font-size: 1rem;
+    }
+}
